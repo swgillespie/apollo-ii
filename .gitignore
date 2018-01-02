@@ -1,0 +1,5 @@
+vendor/
+*.swp
+c.out
+.vscode/
+apollo-ii
