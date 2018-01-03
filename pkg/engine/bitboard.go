@@ -1,6 +1,8 @@
 package engine
 
 import (
+	"bytes"
+	"fmt"
 	"math/bits"
 )
 
@@ -68,6 +70,37 @@ func (b Bitboard) Count() int {
 // Empty returns whether or not this bitboard is empty.
 func (b Bitboard) Empty() bool {
 	return b == 0
+}
+
+func (b Bitboard) String() string {
+	buf := new(bytes.Buffer)
+	for rank := Rank8; ; rank-- {
+		for file := FileA; file <= FileH; file++ {
+			square := MakeSquare(rank, file)
+			if b.Test(square) {
+				fmt.Fprint(buf, " 1 ")
+			} else {
+				fmt.Fprint(buf, " . ")
+			}
+		}
+
+		fmt.Fprintf(buf, "| %s\n", Rank(rank).String())
+		if rank == Rank1 {
+			break
+		}
+	}
+
+	for i := FileA; i <= FileH; i++ {
+		fmt.Fprint(buf, "---")
+	}
+
+	fmt.Fprintln(buf)
+	for file := FileA; file <= FileH; file++ {
+		fmt.Fprintf(buf, " %s ", File(file).String())
+	}
+
+	fmt.Fprintln(buf)
+	return buf.String()
 }
 
 func (b Bitboard) Iter() BitboardIterator {

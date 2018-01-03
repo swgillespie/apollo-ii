@@ -20,10 +20,10 @@ import (
 // piece along a ray to be a legal move, which it is if the first blocking
 // piece is an enemy piece. It is the responsibility of callers of this
 // function to determine whether or not the blocking piece is an enemy piece.
-var rayTable [][]Bitboard
-var pawnTable [][]Bitboard
-var knightTable []Bitboard
-var kingTable []Bitboard
+var rayTable [][]Bitboard = make([][]Bitboard, 64)
+var pawnTable [][]Bitboard = make([][]Bitboard, 64)
+var knightTable []Bitboard = make([]Bitboard, 64)
+var kingTable []Bitboard = make([]Bitboard, 64)
 
 // a ray is "positive" if the ray vector is positive, otherwise a ray is
 // "negative". if a ray is negative, we need to use leading zeros intead of
@@ -114,8 +114,9 @@ func populateDirection(square Square, direction Direction, edge Bitboard) {
 	// starting at the given square, cast a ray in the given direction
 	// and add all bits to the ray mask.
 	entry := &rayTable[square][direction]
+	cursor := square
 	for {
-		cursor := Square(int64(square) + direction.AsVector())
+		cursor = cursor.Towards(direction)
 		entry.Set(cursor)
 
 		// did we reach the end of the board? if so, stop.
@@ -136,6 +137,7 @@ func initializeRays() {
 	filea := FullBitboard.File(FileA)
 	fileh := FullBitboard.File(FileH)
 	for sq := A1; sq <= H8; sq++ {
+		rayTable[sq] = make([]Bitboard, 8)
 		populateDirection(sq, North, rank8)
 		populateDirection(sq, NorthEast, rank8|fileh)
 		populateDirection(sq, East, fileh)
@@ -144,6 +146,101 @@ func initializeRays() {
 		populateDirection(sq, SouthWest, rank1|filea)
 		populateDirection(sq, West, filea)
 		populateDirection(sq, NorthWest, rank8|filea)
+	}
+}
+
+func initializePawns() {
+	rank8 := FullBitboard.Rank(Rank8)
+	rank1 := FullBitboard.Rank(Rank1)
+	filea := FullBitboard.File(FileA)
+	fileh := FullBitboard.File(FileH)
+	for sq := A1; sq <= H8; sq++ {
+		pawnTable[sq] = make([]Bitboard, 2)
+		for _, color := range [...]Color{White, Black} {
+			board := EmptyBitboard
+			var promoRank Bitboard
+			var pawnDirection Direction
+			if color == White {
+				promoRank = rank8
+				pawnDirection = North
+			} else {
+				promoRank = rank1
+				pawnDirection = South
+			}
+
+			if promoRank.Test(sq) {
+				// no legal moves for this particular pawn. it's generally
+				// impossible for pawns to be on the promotion rank anyway
+				// since they should be getting promoted.
+				continue
+			}
+
+			if !filea.Test(sq) {
+				board.Set(sq.Towards(pawnDirection).Towards(West))
+			}
+
+			if !fileh.Test(sq) {
+				board.Set(sq.Towards(pawnDirection).Towards(East))
+			}
+
+			pawnTable[sq][color] = board
+		}
+	}
+}
+
+func initializeKnights() {
+	filea := FullBitboard.File(FileA)
+	fileb := FullBitboard.File(FileB)
+	fileg := FullBitboard.File(FileG)
+	fileh := FullBitboard.File(FileH)
+	rank1 := FullBitboard.Rank(Rank1)
+	rank2 := FullBitboard.Rank(Rank2)
+	rank7 := FullBitboard.Rank(Rank7)
+	rank8 := FullBitboard.Rank(Rank8)
+	for sq := A1; sq <= H8; sq++ {
+		board := EmptyBitboard
+
+		// north-north-west
+		if !filea.Test(sq) && !(rank7 | rank8).Test(sq) {
+			board.Set(sq.Towards(North).Towards(North).Towards(West))
+		}
+
+		// north-north-east
+		if !fileh.Test(sq) && !(rank7 | rank8).Test(sq) {
+			board.Set(sq.Towards(North).Towards(North).Towards(East))
+		}
+
+		// north-east-east
+		if !(fileg | fileh).Test(sq) && !rank8.Test(sq) {
+			board.Set(sq.Towards(North).Towards(East).Towards(East))
+		}
+
+		// south-east-east
+		if !(fileg | fileh).Test(sq) && !rank1.Test(sq) {
+			board.Set(sq.Towards(South).Towards(East).Towards(East))
+		}
+
+		// south-south-east
+		if !fileh.Test(sq) && !(rank1 | rank2).Test(sq) {
+			board.Set(sq.Towards(South).Towards(South).Towards(East))
+		}
+
+		// south-south-west
+		if !filea.Test(sq) && !(rank1 | rank2).Test(sq) {
+			board.Set(sq.Towards(South).Towards(South).Towards(West))
+		}
+
+		// south-west-west
+		if !(filea | fileb).Test(sq) && !rank1.Test(sq) {
+			board.Set(sq.Towards(South).Towards(West).Towards(West))
+		}
+
+		// north-west-west
+		if !(filea | fileb).Test(sq) && !rank8.Test(sq) {
+			board.Set(sq.Towards(North).Towards(West).Towards(West))
+		}
+
+		knightTable[sq] = board
 	}
 }
 
@@ -190,7 +287,10 @@ func initializeKings() {
 	}
 }
 
-// InitializeAttackTables initializes all precomputed state about attack moves.
-func InitializeAttackTables() {
+// initializeAttackTables initializes all precomputed state about attack moves.
+func initializeAttackTables() {
 	initializeRays()
+	initializePawns()
+	initializeKings()
+	initializeKnights()
 }

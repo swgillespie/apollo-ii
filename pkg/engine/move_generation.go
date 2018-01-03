@@ -204,7 +204,7 @@ func generateKingMoves(pos *Position, moves []Move) []Move {
 }
 
 func generatePseudolegalMoves(pos *Position) []Move {
-	moves := make([]Move, options.moveGenerationBufferSize)
+	moves := make([]Move, 0, options.moveGenerationBufferSize)
 	moves = generatePawnMoves(pos, moves)
 	moves = generateKnightMoves(pos, moves)
 	moves = generateSlidingMoves(pos, moves, BishopAttacks, pos.Bishops)

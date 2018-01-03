@@ -320,6 +320,8 @@ func (d Direction) AsVector() int64 {
 		return 9
 	case East:
 		return 1
+	case SouthEast:
+		return -7
 	case South:
 		return -8
 	case SouthWest:
