@@ -117,7 +117,7 @@ func generateSlidingMoves(pos *Position,
 	pieces := boardFunc(color).Iter()
 	for piece, next := pieces.Next(); next; piece, next = pieces.Next() {
 		attacks := attackFunc(piece, enemyPieceMap|alliedPieceMap).Iter()
-		for attack, next := attacks.Next(); next; attack, next = pieces.Next() {
+		for attack, next := attacks.Next(); next; attack, next = attacks.Next() {
 			// in theory we only need to test the end of rays
 			// for occupancy...
 			if enemyPieceMap.Test(attack) {
@@ -210,5 +210,6 @@ func generatePseudolegalMoves(pos *Position) []Move {
 	moves = generateSlidingMoves(pos, moves, BishopAttacks, pos.Bishops)
 	moves = generateSlidingMoves(pos, moves, RookAttacks, pos.Rooks)
 	moves = generateSlidingMoves(pos, moves, QueenAttacks, pos.Queens)
+	moves = generateKingMoves(pos, moves)
 	return moves
 }

@@ -49,6 +49,17 @@ var perftTests = [...]expectedPerft{
 		0,
 		0,
 	},
+	expectedPerft{
+		"rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1",
+		3,
+		8902,
+		34,
+		0,
+		0,
+		0,
+		12,
+		0,
+	},
 }
 
 func TestPerftCorrectness(t *testing.T) {

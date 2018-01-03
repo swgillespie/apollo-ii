@@ -124,6 +124,24 @@ func TestBitboards(t *testing.T) {
 		assert.True(tt, board.Test(F4))
 		assert.True(tt, board.Test(F5))
 	})
+
+	t.Run("wacky-edge", func(tt *testing.T) {
+		board := EmptyBitboard
+		board.Set(A3)
+		board.Set(A2)
+		board.Set(B1)
+
+		set := make(map[Square]bool)
+		iter := board.Iter()
+		for sq, next := iter.Next(); next; sq, next = iter.Next() {
+			set[sq] = true
+		}
+
+		assert.Contains(tt, set, A3)
+		assert.Contains(tt, set, A2)
+		assert.Contains(tt, set, B1)
+		assert.Len(tt, set, 3)
+	})
 }
 
 // Bitboard square iteration is performance critical. It needs to be fast

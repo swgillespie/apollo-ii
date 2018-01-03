@@ -1,6 +1,7 @@
 package engine
 
 import (
+	"fmt"
 	"testing"
 
 	"github.com/stretchr/testify/assert"
@@ -240,4 +241,23 @@ func TestFen(t *testing.T) {
 		assert.False(tt, pos.CanCastleKingside(Black))
 		assert.False(tt, pos.CanCastleQueenside(Black))
 	})
+}
+
+var fenRoundtripTests = [...]string{
+	"rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1",
+	"8/6Q1/5b2/4r3/3k4/2R5/1N6/P7 w - - 0 1",
+}
+
+func TestFenRoundTrip(t *testing.T) {
+	t.Parallel()
+	for _, fen := range fenRoundtripTests {
+		t.Run(fmt.Sprintf("fen-roundtrip-%s", fen), func(tt *testing.T) {
+			pos, err := MakePositionFromFen(fen)
+			if !assert.NoError(tt, err) {
+				tt.FailNow()
+			}
+
+			assert.Equal(tt, fen, pos.AsFen())
+		})
+	}
 }

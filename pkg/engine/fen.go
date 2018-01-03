@@ -1,6 +1,7 @@
 package engine
 
 import (
+	"bytes"
 	"errors"
 	"fmt"
 	"strconv"
@@ -286,4 +287,81 @@ func MakePositionFromFen(fen string) (*Position, error) {
 	}
 
 	return position, nil
+}
+
+// AsFen retuns a string representation of this position in FEN
+// notation.
+func (pos *Position) AsFen() string {
+	buf := new(bytes.Buffer)
+	for rank := Rank8; ; rank-- {
+		emptySquares := 0
+		for file := FileA; file <= FileH; file++ {
+			square := MakeSquare(rank, file)
+			piece, ok := pos.PieceAt(square)
+			if ok {
+				if emptySquares != 0 {
+					fmt.Fprintf(buf, "%d", emptySquares)
+				}
+
+				fmt.Fprintf(buf, "%s", piece.String())
+				emptySquares = 0
+			} else {
+				emptySquares++
+			}
+		}
+
+		if emptySquares != 0 {
+			fmt.Fprintf(buf, "%d", emptySquares)
+		}
+
+		if rank == Rank1 {
+			break
+		}
+
+		fmt.Fprint(buf, "/")
+	}
+
+	fmt.Fprint(buf, " ")
+	if pos.SideToMove() == White {
+		fmt.Fprint(buf, "w")
+	} else {
+		fmt.Fprint(buf, "b")
+	}
+
+	fmt.Fprint(buf, " ")
+	someoneCanCastle := false
+	if pos.CanCastleKingside(White) {
+		fmt.Fprint(buf, "K")
+		someoneCanCastle = true
+	}
+
+	if pos.CanCastleQueenside(White) {
+		fmt.Fprint(buf, "Q")
+		someoneCanCastle = true
+	}
+
+	if pos.CanCastleKingside(Black) {
+		fmt.Fprint(buf, "k")
+		someoneCanCastle = true
+	}
+
+	if pos.CanCastleQueenside(Black) {
+		fmt.Fprint(buf, "q")
+		someoneCanCastle = true
+	}
+
+	if !someoneCanCastle {
+		fmt.Fprint(buf, "-")
+	}
+
+	fmt.Fprint(buf, " ")
+	if pos.HasEnPassantSquare() {
+		fmt.Fprintf(buf, "%s", pos.EnPassantSquare())
+	} else {
+		fmt.Fprint(buf, "-")
+	}
+
+	fmt.Fprint(buf, " ")
+	fmt.Fprintf(buf, "%d %d", pos.HalfmoveClock(), pos.FullmoveClock())
+	return buf.String()
 }
