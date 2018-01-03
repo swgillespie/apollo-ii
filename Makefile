@@ -8,10 +8,13 @@ build:
 test:
 	go test github.com/swgillespie/apollo-ii/pkg/engine
 
+test-verbose:
+	go test github.com/swgillespie/apollo-ii/pkg/engine -v
+
 test-bench:
 	go test github.com/swgillespie/apollo-ii/pkg/engine -bench .
 
 test-cover:
-	go test github.com/swgillespie/apollo-ii/pkg/engine -coverprofile=c.out
-	go tool cover -html=c.out
-	rm c.out
+	go test github.com/swgillespie/apollo-ii/pkg/engine -coverprofile=coverage-engine.out
+	go tool cover -html=coverage-engine.out
+	rm coverage-engine.out

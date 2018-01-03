@@ -5,7 +5,6 @@ import (
 
 	"github.com/spf13/cobra"
 	"github.com/swgillespie/apollo-ii/pkg/engine"
-	"github.com/swgillespie/apollo-ii/pkg/engine/perft"
 )
 
 var depth int
@@ -18,7 +17,7 @@ var perftCmd = &cobra.Command{
 		engine.Initialize()
 
 		start := time.Now()
-		results, err := perft.Perft(args[0], depth)
+		results, err := engine.Perft(args[0], depth)
 		elapsed := time.Since(start)
 		if err != nil {
 			cmd.Printf("fatal error: %s\n", err.Error())
