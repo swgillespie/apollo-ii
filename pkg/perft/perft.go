@@ -1,7 +1,9 @@
-package engine
+package perft
 
 import (
 	"fmt"
+
+	"github.com/swgillespie/apollo-ii/pkg/engine"
 )
 
 type PerftResults struct {
@@ -14,12 +16,12 @@ type PerftResults struct {
 	Checkmates uint64
 }
 
-func Perft(fen string, depth int) (*PerftResults, error) {
+func Perft(fenStr string, depth int) (*PerftResults, error) {
 	if depth < 0 {
 		return nil, fmt.Errorf("invalid ply depth: %d", depth)
 	}
 
-	pos, err := MakePositionFromFen(fen)
+	pos, err := engine.MakePositionFromFen(fenStr)
 	if err != nil {
 		return nil, err
 	}
@@ -29,7 +31,7 @@ func Perft(fen string, depth int) (*PerftResults, error) {
 	return results, nil
 }
 
-func perftImpl(results *PerftResults, pos *Position, depth int) {
+func perftImpl(results *PerftResults, pos *engine.Position, depth int) {
 	if depth == 0 {
 		results.Nodes++
 		return
